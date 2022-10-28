@@ -17,8 +17,6 @@ args = parser.parse_args()
 args.tied = True
 
 
-
-
 def schedule_sampling(eta, itr, channel, batch_size):
     zeros = np.zeros((batch_size,
                       args.total_length - args.input_length - 1,
@@ -29,11 +27,11 @@ def schedule_sampling(eta, itr, channel, batch_size):
         return 0.0, zeros
 
     if itr < args.sampling_stop_iter:
-        eta -= args.sampling_changing_rate  #eta逐渐变小
+        eta -= args.sampling_changing_rate  # eta逐渐变小
     else:
         eta = 0.0
     # 训练结束前eta最好为0  目（eta越大使用答案的几率越高）
-    if itr%100==0:
+    if itr % 100 == 0:
         print('current eta: ', eta)
     random_flip = np.random.random_sample(
         (batch_size, args.total_length - args.input_length - 1))
@@ -85,7 +83,7 @@ def train_wrapper(model):
                                                       is_training=False,
                                                       is_shuffle=False)
     eta = args.sampling_start_value
-    eta -= (begin * args.sampling_changing_rate)  #训练到5000次的时候就不适用答案增强了
+    eta -= (begin * args.sampling_changing_rate)  # 训练到5000次的时候就不适用答案增强了
     itr = begin
     # real_input_flag = {}
     for epoch in range(0, args.max_epoches):
@@ -96,12 +94,19 @@ def train_wrapper(model):
                 break
             batch_size = ims.shape[0]
             eta, real_input_flag = schedule_sampling(eta, itr, args.img_channel, batch_size)
-            if itr % args.test_interval == 0:
+
+            if itr == 0:
                 print('Validate:')
                 trainer.test(model, val_input_handle, args, itr)
+
             trainer.train(model, ims, real_input_flag, args, itr)
             if itr % args.snapshot_interval == 0 and itr > begin:
                 model.save(itr)
+
+            if itr % args.test_interval == 0 and itr != 0:
+                print('Validate:')
+                trainer.test(model, val_input_handle, args, itr)
+
             itr += 1
 
             # meminfo_end = pynvml.nvmlDeviceGetMemoryInfo(handle)
@@ -144,5 +149,3 @@ if __name__ == '__main__':
         if not os.path.exists(args.gen_frm_dir):
             os.makedirs(args.gen_frm_dir)
         text_Wrapper(model)
-
-
