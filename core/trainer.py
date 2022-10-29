@@ -77,8 +77,8 @@ def test(model, test_input_handle, configs, itr):
         f.truncate()
 
         for data in test_input_handle:
-            if batch_id > configs.num_save_samples:
-                break
+            # if batch_id > configs.num_save_samples:
+            #     break
             print(batch_id)
 
             batch_size = data.shape[0]
