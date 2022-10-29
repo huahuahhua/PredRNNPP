@@ -403,7 +403,7 @@ def escore(obs, pre, low, high):
 
 def cal_hss_csi(obs, pre, low, high):
     hits, misses, falsealarms, correctnegatives = prep_clf(obs=obs, pre=pre,
-                                                           low=low, high=high)
+                                                           low=low/70.0, high=high/70.0)
     hss = HSS(hits, misses, falsealarms, correctnegatives)
     csi = CSI(hits, misses, falsealarms, correctnegatives)
     return hss, csi
